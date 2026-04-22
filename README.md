@@ -207,54 +207,63 @@ claude
 1. Открыть PowerShell
 2. Разрешить запуск скриптов (один раз):
 
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
 
-3. Запустить установщик:
+3. Скачать установщик. Два пути на выбор:
 
-```powershell
-npx -p github:sputnik-asgardos/llm-proxy agsetup
-```
+   **Через браузер (проще):** открыть <https://asgardos.ai/platform/llm-proxy/>, пройти org-SSO, нажать «Скачать для Windows» — получится файл `setup.ps1`.
 
-4. В терминале появится короткий код (например `WDJB-MJHT`) и ссылка. Откройте ссылку, введите код, подтвердите.
-5. В конце установщик сам пробует модели и печатает:
+   **Через GitHub CLI** (если уже есть `gh auth`):
 
-```
-Default model: zai/glm-4.6
-Also available: zai/glm-5.1, mimo/mimo-v2-pro
-```
+   ```powershell
+   gh api repos/sputnik-asgardos/llm-proxy/contents/setup.ps1 `
+     -H "Accept: application/vnd.github.raw" > setup.ps1
+   ```
 
-Это значит, что прокси готов.
+4. Запустить установщик:
 
-6. **Перезапустите PowerShell** (чтобы PATH обновился)
-7. Проверьте:
+   ```powershell
+   pwsh -File setup.ps1
+   ```
 
-```powershell
-agclaude -p "какую модель используешь"
-```
+5. В терминале появится короткий код (например `WDJB-MJHT`) и ссылка. Откройте ссылку, введите код, подтвердите.
+6. Дождитесь строки `Готово. Попробуй: agclaude -p 'hi'`. Установщик положил `agclaude.cmd` / `agcodex.cmd` / `agopencode.cmd` в `%LOCALAPPDATA%\asgardos\bin` и записал токен + конфиг в `%APPDATA%\orchestra\` (default-модель `zai/glm-5.1`).
+7. **Перезапустите PowerShell** — чтобы PATH обновился.
+8. Проверьте:
+
+   ```powershell
+   agclaude -p "какую модель используешь"
+   ```
 
 Ответ должен содержать `glm-5.1` или `mimo` — прокси подключён.
 
 ### Если не вышло
 
-**А)** `agclaude: command not found` после setup — не перезапустили PowerShell. Закройте и откройте заново.
+**А)** `agclaude: command not found` после setup — не перезапустили PowerShell. Закройте и откройте заново. Если и после этого не находит — добавьте `%LOCALAPPDATA%\asgardos\bin` в PATH вручную.
 
-**Б)** Установщик падает с ошибкой про `node_modules\asgardos-llm-proxy` и «broken symlink» — это известный баг npm 10.9+/11.x. В свежем релизе (2026-04-22) починили. Если всё равно падает — напишите в [issue #13](https://github.com/sputnik-asgardos/llm-proxy/issues/13).
+**Б)** `gh: command not found` — поставьте GitHub CLI (`winget install --id GitHub.cli`) и авторизуйтесь `gh auth login`, либо воспользуйтесь путём через браузер (см. пункт 3).
 
 **В)** В браузере на device-коде пишет `access denied` — ваш GitHub-аккаунт не в организации `sputnik-systems`. Напишите в команду, чтобы добавили.
 
-**Г)** После `agclaude` всё равно отвечает как обычный Claude — перезапустите `agsetup` (токен мог протухнуть).
+**Г)** После `agclaude` всё равно отвечает как обычный Claude — запустите `pwsh -File setup.ps1` ещё раз (токен мог протухнуть, либо вы запускаете голый `claude` вместо `agclaude`).
+
+**Д)** `401 unauthorized` — токен протух, повторно запустите `pwsh -File setup.ps1`.
 
 ### Сменить модель
 
-После setup default-модель автоматически подставляется во все `ag*`-команды. Посмотреть, что доступно, и сменить:
+После setup default-модель автоматически подставляется во все `ag*`-команды. Чтобы сменить — отредактируйте `%APPDATA%\orchestra\config.json`, поле `defaultModel`:
 
-```powershell
-agmodels                              # таблица провайдеров и моделей
-agtest                                # проверить, какие модели живые
-agsetup --set-default mimo/mimo-v2-pro   # сменить default
+```json
+{
+  "proxyBase": "https://asgardos.ai/platform/llm-proxy",
+  "actor": "your-github-login",
+  "defaultModel": "mimo/mimo-v2-pro"
+}
 ```
+
+Список валидных моделей — в [`providers.json`](https://github.com/sputnik-asgardos/llm-proxy/blob/main/providers.json) репозитория прокси.
 
 Полный гайд: [sputnik-asgardos/llm-proxy](https://github.com/sputnik-asgardos/llm-proxy/blob/main/docs/onboarding/claude-code-auth.md).
 
