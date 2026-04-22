@@ -198,6 +198,25 @@ claude
 /login
 ```
 
+### Альтернатива: корпоративный прокси без VPN
+
+Если ваш GitHub-аккаунт состоит в организации `sputnik-systems` — можно подключить Claude Code к корпоративному прокси `cc.sputnik.systems` вместо использования VPN.
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+npx -p github:sputnik-asgardos/llm-proxy agsetup
+```
+
+Установщик проведёт GitHub device-flow (откройте ссылку из вывода, введите код, подтвердите), пропишет прокси в `%USERPROFILE%\.claude\settings.json` и добавит `ag*` команды в PATH. **После этого перезапустите PowerShell.**
+
+Проверка:
+
+```powershell
+agclaude -p "какую модель используешь"
+```
+
+Ответ должен содержать `glm-5.1` или `mimo`. Полный гайд: [sputnik-asgardos/llm-proxy](https://github.com/sputnik-asgardos/llm-proxy/blob/main/docs/onboarding/claude-code-auth.md).
+
 ---
 
 ## 8. MCP-плагины
