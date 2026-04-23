@@ -243,17 +243,27 @@ claude
 
 ### Сменить модель
 
-После setup default-модель автоматически подставляется во все `ag*`-команды. Чтобы сменить — отредактируйте `%APPDATA%\orchestra\config.json`, поле `defaultModel`:
+После setup default-модель автоматически подставляется во все `ag*`-команды. Сменить командой:
 
-```json
-{
-  "proxyBase": "https://asgardos.ai/platform/llm-proxy",
-  "actor": "your-github-login",
-  "defaultModel": "mimo/mimo-v2-pro"
-}
+```powershell
+agclaude --set-model mimo/mimo-v2-pro
 ```
 
-Список валидных моделей — в [`providers.json`](https://github.com/sputnik-asgardos/llm-proxy/blob/main/providers.json) репозитория прокси.
+Или через классы — они автоматически выбирают лучшую доступную модель:
+
+```powershell
+agclaude --set-model strong      # GLM-5.1 / MiMo-v2-pro (рекомендуется для кода)
+agclaude --set-model strongest   # MiMo-v2.5-pro / GLM-5.1
+agclaude --set-model fast        # GLM-5-turbo / MiMo-v2-omni
+```
+
+Или разово без сохранения:
+
+```powershell
+agclaude --model mimo/mimo-v2-pro -p "ваш промпт"
+```
+
+Доступные модели: `zai/glm-5.1`, `zai/glm-5-turbo`, `zai/glm-4.7`, `mimo/mimo-v2.5-pro`, `mimo/mimo-v2-pro`, `mimo/mimo-v2-omni`.
 
 Полный гайд (ручной, без установщика): [sputnik-asgardos/llm-proxy](https://github.com/sputnik-asgardos/llm-proxy/blob/main/CLAUDE_CODE_SETUP.md).
 
