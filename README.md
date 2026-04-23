@@ -211,7 +211,7 @@ claude
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
 
-3. Скачать установщик: открыть в браузере <https://asgardos.ai/platform/llm-proxy/setup.ps1>. Браузер попросит войти через GitHub (нужен аккаунт в организации `sputnik-systems`) и после входа покажет текст скрипта. Сохрани страницу как файл `setup.ps1` (`Ctrl+S`).
+3. Скачать установщик: перейти в папку, куда хотите положить скрипт, и открыть в браузере <https://asgardos.ai/platform/llm-proxy/setup.ps1>. Браузер попросит войти через GitHub (нужен аккаунт в организации `sputnik-systems`) — после входа файл скачается автоматически. Переложите `setup.ps1` из папки Загрузки в нужную директорию.
 
 4. Разблокировать скачанный файл (Windows помечает файлы из интернета) и запустить установщик:
 
@@ -256,6 +256,17 @@ claude
 Список валидных моделей — в [`providers.json`](https://github.com/sputnik-asgardos/llm-proxy/blob/main/providers.json) репозитория прокси.
 
 Полный гайд (ручной, без установщика): [sputnik-asgardos/llm-proxy](https://github.com/sputnik-asgardos/llm-proxy/blob/main/CLAUDE_CODE_SETUP.md).
+
+### Удалить прокси-клиент
+
+Запустите установщик с флагом `-Uninstall`:
+
+```powershell
+Unblock-File .\setup.ps1
+.\setup.ps1 -Uninstall
+```
+
+Скрипт удалит: обёртки `agclaude`/`agcodex`/`agopencode`, токен и конфиг, запись из PATH, остатки старых npm-пакетов.
 
 ---
 
