@@ -212,6 +212,11 @@ claude
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
+   **Предварительно:** установите `jq`:
+   ```powershell
+   winget install jqlang.jq
+   ```
+
 
 3. Скачать установщик: перейти в папку, куда хотите положить скрипт, и открыть в браузере <https://asgardos.ai/platform/llm-proxy/setup.ps1>. Браузер попросит войти через GitHub (нужен аккаунт в одной из организаций — `sputnik-systems` или `sputnik-asgardos`) — после входа файл скачается автоматически. Переложите `setup.ps1` из папки Загрузки в нужную директорию.
 
@@ -223,7 +228,7 @@ claude
    ```
 
 5. В терминале появится короткий код (например `WDJB-MJHT`) и ссылка. Откройте ссылку, введите код, подтвердите.
-6. Дождитесь строки `Готово. Попробуй: agclaude -p 'hi'`. Установщик положил `agclaude.cmd` / `agcodex.cmd` / `agopencode.cmd` в `%LOCALAPPDATA%\asgardos\bin` и записал токен + конфиг в `%APPDATA%\orchestra\` (default-модель `zai/glm-5.1`).
+6. Дождитесь строки `Готово. Попробуй: agclaude -p 'hi'`. Установщик положил `agclaude.cmd` / `agcodex.cmd` / `agopencode.cmd` в `%LOCALAPPDATA%\asgardos\bin` и записал токен + конфиг в `%APPDATA%\orchestra\` (default-модель `mimo/mimo-v2.5-pro`).
 7. **Перезапустите PowerShell** — чтобы PATH обновился.
 8. Проверьте:
 
@@ -231,7 +236,7 @@ claude
    agclaude -p "какую модель используешь"
    ```
 
-Ответ должен содержать `glm-5.1` или `mimo` — прокси подключён.
+Ответ должен содержать `mimo` или `glm` — прокси подключён.
 
 > **`claude` тоже работает напрямую** — установщик настраивает `~/.claude/settings.json` с `apiKeyHelper` и `ANTHROPIC_BASE_URL`. Можно писать `claude -p "..."` вместо `agclaude -p "..."`. Токен обновляется автоматически при протухании.
 
