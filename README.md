@@ -2,7 +2,7 @@
 
 Руководство по настройке окружения для работы с Claude Code + MCP + Superpowers на Windows 10/11.
 
-> **Версия для macOS:** [dev-environment-setup](https://github.com/Afanaseva/dev-environment-setup)
+> **Версия для macOS:** [dev-environment-setup](https://github.com/vomikodved/dev-environment-setup)
 
 ---
 
@@ -14,14 +14,16 @@
 4. [Node.js](#4-nodejs)
 5. [Git и GitHub CLI](#5-git-и-github-cli)
 6. [Claude Code](#6-claude-code)
-7. [Авторизация в Claude](#7-авторизация-в-claude)
-8. [MCP-плагины](#8-mcp-плагины)
-9. [Superpowers Skills](#9-superpowers-skills)
-10. [Проверка окружения](#10-проверка-окружения)
-11. [Автоматическая установка (промпты)](#11-автоматическая-установка-промпты)
-12. [Troubleshooting](#12-troubleshooting)
+7. [jq](#7-jq)
+8. [Авторизация в Claude](#8-авторизация-в-claude)
+9. [MCP-плагины](#9-mcp-плагины)
+10. [Superpowers Skills](#10-superpowers-skills)
+11. [Проверка окружения](#11-проверка-окружения)
+12. [Автоматическая установка (промпты)](#12-автоматическая-установка-промпты)
+13. [Troubleshooting](#13-troubleshooting)
 
 ---
+
 
 ## 1. Предварительные требования
 
@@ -170,7 +172,25 @@ claude --version
 
 ---
 
-## 7. Авторизация в Claude
+## 7. jq
+
+`jq` — утилита для работы с JSON, используется установщиком и обёртками (`agclaude`, `agopencode`).
+
+### Установка
+
+```powershell
+winget install jqlang.jq
+```
+
+### Проверка
+
+```powershell
+jq --version
+```
+
+---
+
+## 8. Авторизация в Claude
 
 ### Порядок действий
 
@@ -198,9 +218,101 @@ claude
 /login
 ```
 
+### Альтернатива: корпоративный прокси без VPN
+
+Если у вас есть аккаунт на GitHub и он входит в одну из двух организаций — [sputnik-systems](https://github.com/sputnik-systems) или [sputnik-asgardos](https://github.com/sputnik-asgardos) — можно подключить Claude Code к корпоративному прокси `cc.sputnik.systems` вместо использования VPN и оплаченного Claude-аккаунта.
+
+> **Как понять, зарегистрированы ли вы на GitHub?** Откройте <https://github.com/login>. Если сможете войти под своим логином и паролем — у вас есть аккаунт. Если логина нет — зарегистрируйтесь на <https://github.com/join>, а затем попросите в команде добавить вас в `sputnik-systems` или `sputnik-asgardos`. Проверить членство в организации заранее не обязательно — установщик ниже всё подскажет сам.
+
+### Порядок действий
+
+1. Открыть PowerShell
+2. Разрешить запуск скриптов (один раз):
+
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
+
+3. Скачать установщик: перейти в папку, куда хотите положить скрипт, и открыть в браузере <https://bifrost.asgardos.ai:37620/platform/llm-proxy/setup.ps1>. Браузер попросит войти через GitHub (нужен аккаунт в одной из организаций — `sputnik-systems` или `sputnik-asgardos`) — после входа файл скачается автоматически. Переложите `setup.ps1` из папки Загрузки в нужную директорию.
+
+4. Разблокировать скачанный файл (Windows помечает файлы из интернета) и запустить установщик:
+
+   ```powershell
+   Unblock-File .\setup.ps1
+   .\setup.ps1
+   ```
+
+5. В терминале появится короткий код (например `WDJB-MJHT`) и ссылка. Откройте ссылку, введите код, подтвердите.
+6. Дождитесь строки `Готово. Попробуй: agclaude -p 'hi'`. Установщик положил `agclaude.cmd` / `agcodex.cmd` / `agopencode.cmd` / `agcrush.cmd` в `%LOCALAPPDATA%\asgardos\bin` и записал токен + конфиг в `%APPDATA%\orchestra\` (default-модель `kimi/kimi-for-coding`).
+7. **Перезапустите PowerShell** — чтобы PATH обновился.
+8. Проверьте:
+
+   ```powershell
+   agclaude --proxy on    # включить прокси
+agclaude --proxy off   # отключить (прямой Claude)
+agclaude --proxy status
+
+agclaude -p "какую модель используешь"
+   ```
+
+Ответ должен содержать `kimi` или `deepseek` — прокси подключён.
+
+> **`claude` тоже работает напрямую** — установщик настраивает `~/.claude/settings.json` с `apiKeyHelper` и `ANTHROPIC_BASE_URL`. Можно писать `claude -p "..."` вместо `agclaude -p "..."`. Токен обновляется автоматически при протухании.
+
+### Если не вышло
+
+**А)** `agclaude: command not found` после setup — не перезапустили PowerShell. Закройте и откройте заново. Если и после этого не находит — добавьте `%LOCALAPPDATA%\asgardos\bin` в PATH вручную.
+
+**Б)** В браузере при входе или на device-коде пишет `access denied` — ваш GitHub-аккаунт не входит ни в `sputnik-systems`, ни в `sputnik-asgardos`. Напишите в команду, чтобы добавили в одну из них.
+
+**В)** После `agclaude` всё равно отвечает как обычный Claude — запустите `.\setup.ps1` ещё раз (токен мог протухнуть, либо вы запускаете голый `claude` вместо `agclaude`).
+
+**Г)** `401 unauthorized` — токен протух, повторно запустите `.\setup.ps1`. Если apiKeyHelper настроен (по умолчанию после setup), токен обновится автоматически.
+
+**Д)** `apiKeyHelper` не срабатывает — если у вас выставлена переменная окружения `ANTHROPIC_AUTH_TOKEN`, она имеет приоритет над apiKeyHelper. Уберите её из системного окружения.
+
+### Сменить модель
+
+После setup default-модель автоматически подставляется во все `ag*`-команды. Сменить командой:
+
+```powershell
+agclaude --set-model kimi/kimi-for-coding
+```
+
+Или через классы — они автоматически выбирают лучшую доступную модель:
+
+```powershell
+agclaude --set-model strong      # Kimi-for-coding / DeepSeek-v4-flash (recommended)
+agclaude --set-model strongest   # DeepSeek-v4-pro / Kimi-for-coding (premium)
+agclaude --set-model fast        # GLM-5-turbo / MiMo-v2-omni (cheap, quick)
+```
+
+Или разово без сохранения:
+
+```powershell
+agclaude --model kimi/kimi-for-coding -p "ваш промпт"
+```
+
+Посмотреть актуальный список: `agclaude --list-models` (динамически с прокси).
+
+Доступные модели: `kimi/kimi-for-coding`, `deepseek/deepseek-v4-pro`, `deepseek/deepseek-v4-flash`, `zai/glm-5.1`, `zai/glm-5-turbo`, `mimo/mimo-v2.5-pro`, `mimo/mimo-v2-pro`, `mimo/mimo-v2-omni`.
+
+Полный гайд (ручной, без установщика): [sputnik-asgardos/llm-proxy](https://github.com/sputnik-asgardos/llm-proxy/blob/main/CLAUDE_CODE_SETUP.md).
+
+### Удалить прокси-клиент
+
+Запустите установщик с флагом `-Uninstall`:
+
+```powershell
+Unblock-File .\setup.ps1
+.\setup.ps1 -Uninstall
+```
+
+Скрипт удалит: обёртки `agclaude`/`agcodex`/`agopencode`/`agcrush`, токен и конфиг, запись из PATH, остатки старых npm-пакетов.
+
 ---
 
-## 8. MCP-плагины
+## 9. MCP-плагины
 
 MCP-плагины расширяют возможности Claude Code.
 
@@ -297,7 +409,7 @@ Test-Path docs\CODEBASE_MAP.md
 
 ---
 
-## 9. Superpowers Skills
+## 10. Superpowers Skills
 
 Superpowers — набор скилов для улучшения работы Claude Code.
 
@@ -320,7 +432,7 @@ Superpowers — набор скилов для улучшения работы C
 
 ---
 
-## 10. Проверка окружения
+## 11. Проверка окружения
 
 ### Чек-лист
 
@@ -361,7 +473,7 @@ Superpowers — набор скилов для улучшения работы C
 
 ---
 
-## 11. Автоматическая установка (промпты)
+## 12. Автоматическая установка (промпты)
 
 Установка разделена на 2 этапа:
 - **Промпт 1** — для Cursor (установка всего до MCP-плагинов)
@@ -485,7 +597,7 @@ C) Serena MCP:
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 ### VPN не работает
 - Проверьте, что VPN-клиент запущен и подключен
@@ -575,4 +687,4 @@ npm config set prefix "$env:APPDATA\npm"
 ## Версия для macOS
 
 Если вам нужна инструкция для macOS, перейдите в репозиторий:
-https://github.com/Afanaseva/dev-environment-setup
+https://github.com/vomikodved/dev-environment-setup
